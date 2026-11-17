@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>源祖 vs 隐王 · 三路献祭</title>
+<style>
+@font-face{font-family:'Modesto';src:url('assets/fonts/Modesto-Bold.otf')}
+@font-face{font-family:'Captain';src:url('assets/fonts/AmericanCaptain.otf')}
+@font-face{font-family:'NSC';src:url('assets/fonts/nsc-medium.ttf')}
+@font-face{font-family:'NSCB';src:url('assets/fonts/nsc-black.ttf')}
+:root{
+  --gold:#e0b166; --blue:#6fa8d6; --red:#c9504a; --ink:#0a0d10;
+  --pane:rgba(12,16,20,.72); --line:rgba(224,177,102,.22);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:#07090b;color:#e9e3d7;
+  font-family:'NSC',system-ui,sans-serif;user-select:none;-webkit-font-smoothing:antialiased}
+#bg{position:fixed;inset:0;background:url('assets/bg.png') center/cover no-repeat;
+  filter:saturate(.5) brightness(.34) contrast(1.1);transform:scale(1.08)}
+#veil{position:fixed;inset:0;background:
+  radial-gradient(70% 60% at 50% 45%,rgba(6,8,10,.25),rgba(4,6,8,.92) 78%),
+  linear-gradient(180deg,rgba(4,6,8,.95),rgba(4,6,8,.35) 30%,rgba(4,6,8,.9))}
+#grain{position:fixed;inset:0;opacity:.11;pointer-events:none;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E")}
+
+#app{position:fixed;inset:0;display:flex;flex-direction:column;z-index:2}
+/* ---------------- 顶栏 ---------------- */
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:14px 26px 10px;border-bottom:1px solid rgba(224,177,102,.12);
+  background:linear-gradient(180deg,rgba(8,10,13,.75),rgba(8,10,13,0))}
+.fac{display:flex;align-items:center;gap:12px;min-width:250px}
+.fac.right{flex-direction:row-reverse;text-align:right}
+.crest{width:44px;height:44px;border-radius:2px;border:1px solid var(--line);
+  -webkit-mask:url('assets/sigil.png') center/78% no-repeat;mask:url('assets/sigil.png') center/78% no-repeat}
+.fac.blue .crest{background:#8fc0e4;box-shadow:0 0 24px rgba(111,168,214,.55)}
+.fac.red .crest{background:#d97a70;box-shadow:0 0 24px rgba(201,80,74,.55)}
+.fname{font-family:'NSCB';font-size:17px;letter-spacing:.20em;line-height:1.1}
+.fac.blue .fname{color:#bcd9ee}
+.fac.red .fname{color:#eec3bf}
+.fsub{font-family:'Captain';font-size:9px;letter-spacing:.42em;color:#7d7768;margin-top:3px}
+.pips{display:flex;gap:4px;margin-top:6px}
+.fac.right .pips{justify-content:flex-end}
+.pip{width:16px;height:5px;border-radius:1px;background:rgba(255,255,255,.16)}
+.fac.blue .pip.on{background:var(--blue);box-shadow:0 0 9px var(--blue)}
+.fac.red .pip.on{background:var(--red);box-shadow:0 0 9px var(--red)}
+.energy{display:flex;gap:3px;margin-top:6px}
+.fac.right .energy{justify-content:flex-end}
+.orb{width:8px;height:8px;transform:rotate(45deg);background:rgba(255,255,255,.12)}
+.orb.on{background:var(--gold);box-shadow:0 0 8px rgba(224,177,102,.8)}
+.turnbox{text-align:center;flex:1}
+.turnbox b{font-family:'Modesto';font-size:40px;color:#f3e9d6;line-height:.9}
+.turnbox .tlab{font-size:9px;letter-spacing:.4em;color:#7d7768}
+#phase{font-size:12px;letter-spacing:.26em;color:var(--gold);margin-top:4px;height:16px}
+
+/* ---------------- 索路 ---------------- */
+main{flex:1;display:flex;align-items:center;justify-content:center;gap:22px;padding:14px 26px;min-height:0}
+.lane{position:relative;width:min(23vw,210px);height:100%;max-height:400px;
+  background:linear-gradient(180deg,rgba(30,14,14,.55),rgba(10,13,17,.70) 48%,rgba(12,18,26,.6));
+  border:1px solid rgba(224,177,102,.16);border-radius:3px;cursor:pointer;
+  display:flex;flex-direction:column;justify-content:space-between;align-items:center;
+  padding:10px 0 12px;transition:transform .16s,border-color .25s,box-shadow .25s}
+.lane:before{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:74px;height:74px;opacity:.10;
+  background:url('assets/sigil.png') center/contain no-repeat;pointer-events:none}
+.lane.lead-p{border-color:rgba(111,168,214,.55);box-shadow:0 0 34px rgba(111,168,214,.12) inset,0 0 22px rgba(0,0,0,.5)}
+.lane.lead-e{border-color:rgba(201,80,74,.55);box-shadow:0 0 34px rgba(201,80,74,.12) inset,0 0 22px rgba(0,0,0,.5)}
+.lane.sel{border-color:rgba(224,177,102,.9);box-shadow:0 0 0 1px rgba(224,177,102,.5),0 0 40px rgba(224,177,102,.18)}
+.lane.target{border-color:rgba(224,177,102,.45);animation:tpulse 1.6s ease-in-out infinite}
+@keyframes tpulse{0%,100%{box-shadow:0 0 0 0 rgba(224,177,102,0) inset}50%{box-shadow:0 0 26px rgba(224,177,102,.22) inset}}
+.lane.hitp{animation:hitp .5s ease}
+.lane.hite{animation:hite .5s ease}
+@keyframes hitp{0%{box-shadow:0 0 0 0 rgba(111,168,214,.85) inset}100%{box-shadow:0 0 0 60px rgba(111,168,214,0) inset}}
+@keyframes hite{0%{box-shadow:0 0 0 0 rgba(201,80,74,.85) inset}100%{box-shadow:0 0 0 60px rgba(201,80,74,0) inset}}
+.val{font-family:'Modesto';font-size:52px;line-height:1;transition:transform .2s,color .3s}
+.val.e{color:#e2938d;text-shadow:0 0 26px rgba(201,80,74,.35)}
+.val.p{color:#a8cce8;text-shadow:0 0 26px rgba(111,168,214,.35)}
+.val.pop{transform:scale(1.28)}
+.mid{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%}
+.mid hr{width:60%;border:0;border-top:1px solid rgba(224,177,102,.18)}
+.lname{font-size:10px;letter-spacing:.34em;color:#7d7768}
+.crown{font-size:13px;color:#5d5850;letter-spacing:.1em;height:16px}
+.lane .bar{position:absolute;left:14px;right:14px;bottom:58px;height:3px;display:flex;gap:2px;opacity:.9}
+.lane .bar i{display:block;height:100%;transition:width .35s ease}
+.lane .bar .pb{background:#6fa8d6;box-shadow:0 0 10px rgba(111,168,214,.6)}
+.lane .bar .eb{background:#c9504a;box-shadow:0 0 10px rgba(201,80,74,.6)}
+.lane.lead-p .crown{color:var(--blue);text-shadow:0 0 12px rgba(111,168,214,.8)}
+.lane.lead-e .crown{color:var(--red);text-shadow:0 0 12px rgba(201,80,74,.8)}
+
+/* 漂浮数字 */
+.float{position:fixed;font-family:'Modesto';font-size:26px;pointer-events:none;z-index:60;
+  animation:fl 1s ease-out forwards;text-shadow:0 0 16px currentColor}
+@keyframes fl{0%{opacity:0;transform:translateY(6px) scale(.8)}20%{opacity:1;transform:translateY(-4px) scale(1.1)}
+  100%{opacity:0;transform:translateY(-48px) scale(1)}}
+
+/* ---------------- 手牌区 ---------------- */
+footer{display:flex;align-items:flex-end;gap:18px;padding:10px 26px 18px;
+  border-top:1px solid rgba(224,177,102,.12);
+  background:linear-gradient(0deg,rgba(8,10,13,.92),rgba(8,10,13,.25))}
+#hand{flex:1;display:flex;justify-content:center;align-items:flex-end;gap:10px;min-height:168px}
+.card{position:relative;width:104px;height:158px;border-radius:3px;cursor:pointer;
+  background:linear-gradient(180deg,#1a2029,#0d1116);border:1px solid rgba(224,177,102,.22);
+  box-shadow:0 10px 22px rgba(0,0,0,.55);transition:transform .16s,box-shadow .2s,border-color .2s;
+  overflow:hidden;flex:0 0 auto}
+.card:hover{transform:translateY(-10px);border-color:rgba(224,177,102,.6)}
+.card.sel{transform:translateY(-18px);border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 16px 34px rgba(224,177,102,.28)}
+.card .artbox{position:relative;height:94px;overflow:hidden;border-bottom:1px solid rgba(224,177,102,.18)}
+.card .art{width:100%;height:100%;object-fit:cover;object-position:50% 28%;display:block;opacity:.95}
+.card .artbox:after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(10,13,17,0) 42%,rgba(13,17,22,.55) 72%,#0d1116 100%)}
+.card .cost{position:absolute;left:5px;top:5px;width:22px;height:22px;display:grid;place-items:center;
+  font-family:'Modesto';font-size:14px;color:#20160a;background:var(--gold);border-radius:2px;
+  box-shadow:0 0 14px rgba(224,177,102,.55)}
+.card .pw{position:absolute;right:5px;top:5px;font-family:'Modesto';font-size:22px;color:#fff;
+  text-shadow:0 2px 10px #000,0 0 14px rgba(0,0,0,.9)}
+.card .nm{font-size:11px;letter-spacing:.06em;text-align:center;padding:6px 4px 0;color:#e6dfd1}
+.card .fx{font-size:9px;letter-spacing:.1em;text-align:center;padding-top:3px;color:#93a0ab}
+.card.fx-corrupt .fx{color:#e08d86}
+.card.fx-surge .fx{color:#8fd6c8}
+.card.fx-spread .fx{color:#e0c187}
+.card.fx-draw .fx{color:#9db8e0}
+.card.dim{opacity:.42;filter:grayscale(.5)}
+
+#endTurn{flex:0 0 auto;width:132px;height:52px;font-family:'NSCB';font-size:14px;letter-spacing:.28em;
+  color:#1a1410;background:linear-gradient(180deg,#edc47c,#cf9744);border:none;border-radius:2px;
+  cursor:pointer;box-shadow:0 10px 26px rgba(207,151,68,.25);transition:filter .2s,transform .12s}
+#endTurn:hover:not(:disabled){filter:brightness(1.09);transform:translateY(-2px)}
+#endTurn:disabled{filter:grayscale(.7) brightness(.55);cursor:default}
+
+/* 敌方手牌背面 */
+#aihand{display:flex;gap:4px;align-items:center}
+.back{width:22px;height:31px;border-radius:2px;background:linear-gradient(180deg,#2a1a1a,#140d0d);
+  border:1px solid rgba(201,80,74,.35);box-shadow:inset 0 0 8px rgba(201,80,74,.18)}
+
+/* ---------------- 遮罩 ---------------- */
+.overlay{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:14px;animation:ovin .5s ease both}
+@keyframes ovin{from{opacity:0}to{opacity:1}}
+.overlay.hide{display:none}
+#intro{background:#07090b;overflow:hidden}
+.half{position:absolute;top:0;bottom:0;width:58%;background-size:cover;background-position:center;
+  opacity:.62;filter:blur(2px) saturate(1.05) brightness(.95);transform:scale(1.06)}
+.half.am{left:0;background-image:url('assets/title-am.png');clip-path:polygon(0 0,100% 0,72% 100%,0 100%)}
+.half.hk{right:0;background-image:url('assets/title-hk.png');clip-path:polygon(28% 0,100% 0,100% 100%,0 100%)}
+#intro:after{content:'';position:absolute;inset:0;
+  background:radial-gradient(52% 58% at 50% 47%,rgba(5,7,9,.66),rgba(4,6,8,.90) 62%,rgba(3,4,6,.97));}
+#intro:before{content:'';position:absolute;inset:0;z-index:2;
+  background:linear-gradient(90deg,rgba(5,7,9,.5),rgba(5,7,9,0) 30%,rgba(5,7,9,0) 70%,rgba(5,7,9,.5))}
+.vswrap{position:relative;z-index:3;display:flex;align-items:center;gap:clamp(18px,4vw,60px);
+  margin-bottom:8px}
+.sname{text-align:center}
+.sname b{display:block;font-family:'NSCB';font-size:clamp(34px,6vw,64px);letter-spacing:.14em;line-height:1}
+.sname span{display:block;font-family:'Captain';font-size:10px;letter-spacing:.5em;margin-top:8px;color:#8d8677}
+.sname.blue b{color:#cfe6f7;text-shadow:0 0 50px rgba(111,168,214,.6)}
+.sname.red b{color:#f2cdc9;text-shadow:0 0 50px rgba(201,80,74,.6)}
+.vsmark{font-family:'Modesto';font-size:clamp(30px,5vw,52px);color:var(--gold);
+  text-shadow:0 0 40px rgba(224,177,102,.5);letter-spacing:.05em}
+.tagline{position:relative;z-index:3;font-size:12px;letter-spacing:.34em;color:#9a9384}
+.rulesbox{position:relative;z-index:3;display:flex;gap:26px;flex-wrap:wrap;justify-content:center;
+  max-width:760px;margin-top:6px}
+.rule{font-size:11.5px;letter-spacing:.08em;color:#8b8578;display:flex;gap:8px;align-items:center}
+.rule i{font-style:normal;font-family:'Modesto';color:var(--gold);font-size:12px}
+.cta{margin-top:16px;font-family:'NSCB';font-size:14px;letter-spacing:.42em;color:#1a1410;
+  background:linear-gradient(180deg,#edc47c,#cf9744);padding:15px 40px;border:none;border-radius:2px;
+  cursor:pointer;position:relative;z-index:3;box-shadow:0 12px 40px rgba(207,151,68,.3);
+  transition:transform .15s,filter .2s}
+.cta:hover{transform:translateY(-2px);filter:brightness(1.08)}
+
+/* 结算 */
+#result{background:radial-gradient(70% 70% at 50% 45%,rgba(8,10,12,.78),rgba(3,4,6,.97))}
+.rbig{font-family:'NSCB';font-size:clamp(48px,9vw,92px);letter-spacing:.16em;
+  color:#f5ead6;text-shadow:0 0 60px rgba(224,177,102,.35)}
+.rbig.win{color:#dfeefb;text-shadow:0 0 60px rgba(111,168,214,.5)}
+.rbig.lose{color:#e8c0bb;text-shadow:0 0 60px rgba(201,80,74,.45)}
+.rsub{font-size:12px;letter-spacing:.34em;color:#8b8578}
+.rscore{font-family:'Modesto';font-size:34px;letter-spacing:.1em;margin-top:4px}
+.rscore span{font-size:32px;color:#f2e7d3}
+
+#toast{position:fixed;left:50%;top:16%;transform:translateX(-50%);z-index:50;pointer-events:none;
+  font-family:'NSCB';font-size:22px;letter-spacing:.28em;opacity:0;transition:opacity .3s,transform .3s}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(-6px)}
+
+@media (max-width:900px){
+  .fac{min-width:0}
+  .fsub{display:none}
+  main{gap:10px;padding:8px}
+  .lane{width:30vw}
+  .card{width:86px;height:126px}
+  .card .art{height:64px}
+  #hand{min-height:134px;gap:6px}
+  #endTurn{width:100px;font-size:12px;letter-spacing:.16em}
+  .val{font-size:38px}
+}
+</style>
+</head>
+<body>
+<div id="bg"></div><div id="veil"></div><div id="grain"></div>
+
+<div id="app">
+  <header>
+    <div class="fac blue">
+      <div class="crest"></div>
+      <div>
+        <div class="fname">源祖 <span style="font-size:10px;letter-spacing:.2em;color:#7d7768">(你)</span></div>
+        <div class="fsub">ARCHMOTHER</div>
+        <div class="pips" id="pipsP"></div>
+        <div class="energy" id="energyP"></div>
+      </div>
+    </div>
+    <div class="turnbox">
+      <div class="tlab">ROUND</div>
+      <b id="turnNo">1</b>
+      <div id="phase">你的献祭阶段</div>
+    </div>
+    <div class="fac red right">
+      <div class="crest"></div>
+      <div>
+        <div class="fname">隐王</div>
+        <div class="fsub">HIDDEN KING</div>
+        <div class="pips" id="pipsE"></div>
+        <div class="energy" id="energyE"></div>
+        <div id="aihand" style="margin-top:6px"></div>
+      </div>
+    </div>
+  </header>
+
+  <main id="lanes"></main>
+
+  <footer>
+    <div id="hand"></div>
+    <button id="endTurn">结束回合</button>
+  </footer>
+</div>
+
+<div id="toast"></div>
+
+<div class="overlay" id="intro">
+  <div class="half am"></div>
+  <div class="half hk"></div>
+  <div class="vswrap">
+    <div class="sname blue"><b>源祖</b><span>ARCHMOTHER</span></div>
+    <div class="vsmark">vs</div>
+    <div class="sname red"><b>隐王</b><span>HIDDEN KING</span></div>
+  </div>
+  <div class="tagline">三 路 献 祭 · 争 夺 魂 火</div>
+  <div class="rulesbox">
+    <div class="rule"><i>01</i>每回合 3 点魂力（每 3 回合 +1），抽至 5 张</div>
+    <div class="rule"><i>02</i>点击手牌 → 点击索路出牌，点数累加为该路供奉值</div>
+    <div class="rule"><i>03</i>回合结算：占据 2 条以上索路得 1 分，先到 8 分者胜</div>
+  </div>
+  <button class="cta" id="btnStart">开 战</button>
+</div>
+
+<div class="overlay hide" id="result">
+  <div class="rbig" id="rbig">胜 利</div>
+  <div class="rsub" id="rsub">ARCHMOTHER PREVAILS</div>
+  <div class="rscore"><span id="rsP">0</span> : <span id="rsE">0</span></div>
+  <button class="cta" id="btnAgain">再 战</button>
+</div>
+
+<script>
+const TAU = Math.PI * 2;
+const $ = id => document.getElementById(id);
+
+/* ---------------- 卡池 ---------------- */
+const POOL = [
+  { k:'w1', n:'主动装填', c:1, p:3, fx:'none',    a:'assets/cards/weapon01.png', t:'武器' },
+  { k:'w2', n:'狂战士',   c:2, p:5, fx:'none',    a:'assets/cards/weapon02.png', t:'武器' },
+  { k:'w3', n:'血之献祭', c:1, p:3, fx:'corrupt', a:'assets/cards/weapon03.png', t:'武器' },
+  { k:'w4', n:'碎裂拳',   c:2, p:4, fx:'surge',   a:'assets/cards/weapon04.png', t:'武器' },
+  { k:'w5', n:'炼金之火', c:3, p:6, fx:'spread',  a:'assets/cards/weapon05.png', t:'武器' },
+  { k:'w6', n:'穿甲弹',   c:2, p:4, fx:'corrupt', a:'assets/cards/weapon06.png', t:'武器' },
+  { k:'w7', n:'背刺者',   c:1, p:2, fx:'draw',    a:'assets/cards/weapon07.png', t:'武器' },
+  { k:'w8', n:'邪教献祭', c:3, p:5, fx:'surge',   a:'assets/cards/weapon08.png', t:'武器' },
+  { k:'v9', n:'巨像',     c:3, p:6, fx:'none',    a:'assets/cards/vitality09.png', t:'生命' },
+  { k:'v10',n:'死里逃生', c:2, p:3, fx:'surge',   a:'assets/cards/vitality10.png', t:'生命' },
+  { k:'v11',n:'神圣屏障', c:1, p:2, fx:'spread',  a:'assets/cards/vitality11.png', t:'生命' },
+  { k:'v12',n:'反咒',     c:2, p:2, fx:'corrupt', a:'assets/cards/vitality12.png', t:'生命' },
+  { k:'v13',n:'战斗背心', c:1, p:3, fx:'none',    a:'assets/cards/vitality13.png', t:'生命' },
+  { k:'v14',n:'驱魔',     c:2, p:3, fx:'draw',    a:'assets/cards/vitality14.png', t:'生命' },
+  { k:'s15',n:'奥术涌动', c:1, p:2, fx:'surge',   a:'assets/cards/spirit15.png', t:'灵性' },
+  { k:'s16',n:'无边灵性', c:3, p:5, fx:'draw',    a:'assets/cards/spirit16.png', t:'灵性' },
+  { k:'s17',n:'寒潮',     c:2, p:3, fx:'corrupt', a:'assets/cards/spirit17.png', t:'灵性' },
+  { k:'s18',n:'诅咒遗物', c:3, p:4, fx:'corrupt', a:'assets/cards/spirit18.png', t:'灵性' },
+  { k:'s19',n:'腐化',     c:2, p:2, fx:'corrupt', a:'assets/cards/spirit19.png', t:'灵性' },
+  { k:'s20',n:'缴械咒',   c:1, p:2, fx:'corrupt', a:'assets/cards/spirit20.png', t:'灵性' },
+  { k:'l21',n:'巅峰之战', c:4, p:8, fx:'none',    a:'assets/cards/legendary21.png', t:'传说' },
+  { k:'l22',n:'远古庇护', c:4, p:7, fx:'surge',   a:'assets/cards/legendary22.png', t:'传说' },
+  { k:'l23',n:'天界指引', c:3, p:5, fx:'spread',  a:'assets/cards/legendary23.png', t:'传说' },
+  { k:'l24',n:'异界射击', c:4, p:7, fx:'corrupt', a:'assets/cards/legendary24.png', t:'传说' }
+];
+const CARD = {};
+POOL.forEach(c => CARD[c.k] = c);
+const FXNAME = { none:'供奉', corrupt:'侵蚀 −2', surge:'充能 +2', spread:'蔓延 +1', draw:'启示 抽牌' };
+const LANE_NAMES = ['左路', '中路', '右路'];
+const WIN = 8;
+
+/* ---------------- 音效 ---------------- */
+let ac = null;
+function ai(){ if(!ac){ try{ ac = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+  if(ac && ac.state==='suspended') ac.resume(); }
+function tone(f, d, type, v, f2){
+  if(!ac) return;
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = type||'triangle';
+  o.frequency.setValueAtTime(f, ac.currentTime);
+  if(f2) o.frequency.exponentialRampToValueAtTime(f2, ac.currentTime+d);
+  g.gain.setValueAtTime(.0001, ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(v||.12, ac.currentTime+.012);
+  g.gain.exponentialRampToValueAtTime(.0001, ac.currentTime+d);
+  o.connect(g).connect(ac.destination);
+  o.start(); o.stop(ac.currentTime+d+.02);
+}
+const sfx = {
+  pick(){ tone(760,.06,'square',.05); },
+  play(){ tone(300,.12,'triangle',.1,180); },
+  eplay(){ tone(220,.12,'triangle',.08,150); },
+  score(p){ p? tone(880,.18,'triangle',.11) : tone(500,.18,'triangle',.08); },
+  bad(){ tone(180,.3,'sawtooth',.09,90); },
+  win(){ [523,659,784,1046].forEach((f,i)=>setTimeout(()=>tone(f,.3,'triangle',.1),i*110)); },
+  lose(){ [392,330,262,196].forEach((f,i)=>setTimeout(()=>tone(f,.4,'sine',.1),i*140)); }
+};
+
+/* ---------------- 状态 ---------------- */
+const S = {
+  turn:1, phase:'player', score:{p:0,e:0}, energy:{p:3,e:3},
+  hand:[], aiHand:[], deck:[], aiDeck:[], discard:[], aiDiscard:[],
+  lanes:[{p:0,e:0},{p:0,e:0},{p:0,e:0}], sel:-1, busy:false, over:false
+};
+const shuffle = a => { for(let i=a.length-1;i>0;i--){ const j = (Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+function freshDeck(){ return shuffle(POOL.map(c => c.k)); }
+function newGame(){
+  S.turn = 1; S.phase = 'player'; S.score = {p:0,e:0}; S.busy = false; S.over = false; S.sel = -1;
+  S.lanes = [{p:0,e:0},{p:0,e:0},{p:0,e:0}];
+  S.deck = freshDeck(); S.aiDeck = freshDeck();
+  S.hand = []; S.aiHand = []; S.discard = []; S.aiDiscard = [];
+  drawTo(S.hand, S.deck, S.discard, 5);
+  drawTo(S.aiHand, S.aiDeck, S.aiDiscard, 4);
+  S.energy = { p: 3, e: 3 };
+  render(); setPhase('你的献祭阶段');
+}
+function drawTo(hand, deck, disc, n){
+  while (hand.length < n){
+    if (!deck.length){ deck.push(...shuffle(disc.splice(0))); if(!deck.length) break; }
+    hand.push(deck.pop());
+  }
+}
+
+/* ---------------- 渲染 ---------------- */
+const laneEls = [];
+function buildLanes(){
+  const box = $('lanes'); box.innerHTML = ''; laneEls.length = 0;
+  for (let i = 0; i < 3; i++){
+    const d = document.createElement('div');
+    d.className = 'lane';
+    d.innerHTML = '<div class="val e">0</div>' +
+      '<div class="mid"><hr><div class="lname">' + LANE_NAMES[i] + '</div><div class="crown">—</div><hr></div>' +
+      '<div class="val p">0</div><div class="bar"><i class="pb" style="width:50%"></i><i class="eb" style="width:50%"></i></div>';
+    d.addEventListener('click', () => onLane(i));
+    box.appendChild(d); laneEls.push(d);
+  }
+}
+function buildPips(el, n, cls){
+  el.innerHTML = '';
+  for (let i = 0; i < WIN; i++){
+    const s = document.createElement('div');
+    s.className = 'pip' + (i < n ? ' on' : '');
+    el.appendChild(s);
+  }
+}
+function render(){
+  $('turnNo').textContent = S.turn;
+  buildPips($('pipsP'), S.score.p, 'p');
+  buildPips($('pipsE'), S.score.e, 'e');
+
+  // 魂力
+  ['P','E'].forEach(w => {
+    const el = $('energy' + w), who = w === 'P' ? 'p' : 'e';
+    const max = Math.max(5, S.energy[who]);
+    el.innerHTML = '';
+    for (let i = 0; i < max; i++){
+      const o = document.createElement('div');
+      o.className = 'orb' + (i < S.energy[who] ? ' on' : '');
+      el.appendChild(o);
+    }
+  });
+
+  // 索路
+  S.lanes.forEach((l, i) => {
+    const el = laneEls[i];
+    el.querySelector('.val.e').textContent = l.e;
+    el.querySelector('.val.p').textContent = l.p;
+    const crown = el.querySelector('.crown');
+    el.classList.toggle('lead-p', l.p > l.e);
+    el.classList.toggle('lead-e', l.e > l.p);
+    el.classList.toggle('sel', S.sel === i && S.phase === 'player');
+    el.classList.toggle('target', S.sel >= 0 && S.phase === 'player');
+    crown.textContent = l.p > l.e ? '◆ 源祖' : l.e > l.p ? '◆ 隐王' : '—';
+    const tot = l.p + l.e;
+    const bar = el.querySelector('.bar');
+    if (bar){
+      bar.querySelector('.pb').style.width = (tot ? l.p / tot * 100 : 50) + '%';
+      bar.querySelector('.eb').style.width = (tot ? l.e / tot * 100 : 50) + '%';
+    }
+  });
+
+  // 敌方手牌背面
+  const ab = $('aihand'); ab.innerHTML = '';
+  for (let i = 0; i < S.aiHand.length; i++){
+    const b = document.createElement('div'); b.className = 'back'; ab.appendChild(b);
+  }
+
+  renderHand();
+  $('endTurn').disabled = S.phase !== 'player' || S.over;
+}
+function renderHand(){
+  const box = $('hand'); box.innerHTML = '';
+  S.hand.forEach((k, i) => {
+    const c = CARD[k];
+    const d = document.createElement('div');
+    d.className = 'card fx-' + c.fx + (S.sel === i ? ' sel' : '') +
+      (S.phase === 'player' && c.c > S.energy.p ? ' dim' : '');
+    d.innerHTML = '<div class="artbox"><img class="art" src="' + c.a + '" alt=""></div>' +
+      '<div class="cost">' + c.c + '</div><div class="pw">' + c.p + '</div>' +
+      '<div class="nm">' + c.n + '</div><div class="fx">' + FXNAME[c.fx] + '</div>';
+    d.addEventListener('click', e => { e.stopPropagation(); onCard(i); });
+    box.appendChild(d);
+  });
+}
+function setPhase(t){ $('phase').textContent = t; }
+
+function floatText(laneIdx, txt, color){
+  const r = laneEls[laneIdx].getBoundingClientRect();
+  const d = document.createElement('div');
+  d.className = 'float'; d.textContent = txt; d.style.color = color;
+  d.style.left = (r.left + r.width / 2 - 14) + 'px';
+  d.style.top = (r.top + r.height / 2 - 18) + 'px';
+  document.body.appendChild(d);
+  setTimeout(() => d.remove(), 1000);
+}
+let toastT = null;
+function toast(txt, color){
+  const t = $('toast'); t.textContent = txt; t.style.color = color || '#e0b166';
+  t.classList.add('on');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => t.classList.remove('on'), 1300);
+}
+
+/* ---------------- 交互 ---------------- */
+function onCard(i){
+  ai();
+  if (S.phase !== 'player' || S.busy) return;
+  S.sel = (S.sel === i ? -1 : i);
+  sfx.pick();
+  render();
+}
+function onLane(i){
+  ai();
+  if (S.phase !== 'player' || S.busy || S.sel < 0) return;
+  const k = S.hand[S.sel], c = CARD[k];
+  if (c.c > S.energy.p){ toast('魂力不足', '#c9504a'); sfx.bad(); return; }
+  playCard(S.sel, i, 'p');
+  S.sel = -1;
+  render();
+}
+
+function playCard(handIdx, lane, who, isAI){
+  const hand = who === 'p' ? S.hand : S.aiHand;
+  const k = hand.splice(handIdx, 1)[0];
+  const c = CARD[k];
+  if (who === 'p'){ S.energy.p -= c.c; S.discard.push(k); }
+  else { S.energy.e -= c.c; S.aiDiscard.push(k); }
+
+  const L = S.lanes[lane];
+  if (who === 'p') L.p += c.p; else L.e += c.p;
+  animateVal(lane, who);
+  floatText(lane, (who === 'p' ? '+' : '-') + c.p, who === 'p' ? '#a8cce8' : '#e2938d');
+  laneEls[lane].classList.add(who === 'p' ? 'hitp' : 'hite');
+  setTimeout(() => laneEls[lane].classList.remove(who === 'p' ? 'hitp' : 'hite'), 520);
+  who === 'p' ? sfx.play() : sfx.eplay();
+
+  // 效果
+  if (c.fx === 'surge'){
+    if (who === 'p') L.p += 2; else L.e += 2;
+    animateVal(lane, who);
+    setTimeout(() => floatText(lane, '+2 充能', who === 'p' ? '#8fd6c8' : '#e0a09a'), 160);
+  } else if (c.fx === 'corrupt'){
+    if (who === 'p') L.e = Math.max(0, L.e - 2); else L.p = Math.max(0, L.p - 2);
+    animateVal(lane, who === 'p' ? 'e' : 'p');
+    setTimeout(() => floatText(lane, '−2 侵蚀', who === 'p' ? '#e2938d' : '#a8cce8'), 160);
+  } else if (c.fx === 'spread'){
+    [lane - 1, lane + 1].forEach(j => {
+      if (j < 0 || j > 2) return;
+      if (who === 'p') S.lanes[j].p += 1; else S.lanes[j].e += 1;
+      animateVal(j, who);
+      setTimeout(() => floatText(j, '+1 蔓延', who === 'p' ? '#e0c187' : '#e0a09a'), 200);
+    });
+  } else if (c.fx === 'draw'){
+    if (who === 'p') drawTo(S.hand, S.deck, S.discard, S.hand.length + 1);
+    else drawTo(S.aiHand, S.aiDeck, S.aiDiscard, S.aiHand.length + 1);
+  }
+  if (!isAI){ render(); }
+}
+function animateVal(lane, who){
+  const el = laneEls[lane].querySelector(who === 'p' || who === 'e' ? '.val.' + who : '.val.' + who);
+  el.classList.add('pop');
+  setTimeout(() => el.classList.remove('pop'), 220);
+}
+
+/* ---------------- AI ---------------- */
+function pickMove(){
+  const opts = [];
+  S.aiHand.forEach((k, i) => {
+    const c = CARD[k];
+    if (c.c > S.energy.e) return;
+    for (let l = 0; l < 3; l++){
+      const L = S.lanes[l];
+      const contest = (L.p - L.e);                 // 玩家领先越多越该抢
+      let v = c.c * 0.25 + c.p * 1.0 + contest * 1.55;
+      if (c.fx === 'corrupt' && L.p > 0) v += 3.2;
+      if (c.fx === 'surge') v += 1.2;
+      if (c.fx === 'spread') v += (l === 1 ? 1.6 : 0.4);
+      if (c.fx === 'draw') v += S.aiHand.length <= 1 ? 2.2 : 0.5;
+      v += Math.random() * 0.6;
+      opts.push({ v, card: i, lane: l, cost: c.c });
+    }
+  });
+  if (!opts.length) return null;
+  opts.sort((a, b) => b.v - a.v);
+  if (Math.random() < 0.12 && opts.length > 2) return opts[1 + ((Math.random() * 2) | 0)];
+  return opts[0];
+}
+
+async function endTurn(){
+  if (S.phase !== 'player' || S.over) return;
+  S.phase = 'ai'; S.busy = true; S.sel = -1; render();
+  setPhase('隐王正在献祭…');
+  await sleep(560);
+
+  let guard = 0;
+  while (guard++ < 12){
+    const mv = pickMove();
+    if (!mv) break;
+    playCard(mv.card, mv.lane, 'e', true);
+    renderHand(); render();
+    await sleep(520);
+  }
+  await sleep(360);
+  setPhase('结算魂火');
+  await resolve();
+}
+
+async function resolve(){
+  let pl = 0, el = 0;
+  S.lanes.forEach(L => { if (L.p > L.e) pl++; else if (L.e > L.p) el++; });
+  const dp = pl >= 2 ? 1 : 0;
+  const de = el >= 2 ? 1 : 0;
+  S.score.p = Math.min(WIN, S.score.p + dp);
+  S.score.e = Math.min(WIN, S.score.e + de);
+  render();
+  if (dp) sfx.score(true);
+  if (dp) toast('源祖 +' + dp, '#7fb2dd');
+  await sleep(420);
+  if (dp === 0 && de > 0){ toast('隐王 +' + de, '#d8796f'); }
+  await sleep(520);
+
+  if (S.score.p >= WIN || S.score.e >= WIN){ finish(); return; }
+  // 下一回合
+  S.turn++;
+  const base = Math.min(5, 3 + Math.floor((S.turn - 1) / 3));
+  S.energy = { p: base, e: base };
+  drawTo(S.hand, S.deck, S.discard, 5);
+  drawTo(S.aiHand, S.aiDeck, S.aiDiscard, 4);
+  S.phase = 'player'; S.busy = false;
+  setPhase('你的献祭阶段');
+  render();
+}
+
+function finish(){
+  S.over = true; S.busy = true; S.phase = 'over'; render();
+  const win = S.score.p >= WIN;
+  $('rbig').textContent = win ? '胜 利' : '败 北';
+  $('rbig').className = 'rbig ' + (win ? 'win' : 'lose');
+  $('rsub').textContent = win ? 'ARCHMOTHER PREVAILS' : 'HIDDEN KING PREVAILS';
+  $('rsP').textContent = S.score.p;
+  $('rsE').textContent = S.score.e;
+  $('result').classList.remove('hide');
+  win ? sfx.win() : sfx.lose();
+}
+
+/* ---------------- 启动 ---------------- */
+function start(){
+  ai();
+  $('intro').classList.add('hide');
+  $('result').classList.add('hide');
+  buildLanes();
+  newGame();
+}
+$('btnStart').addEventListener('click', e => { e.stopPropagation(); start(); });
+$('btnAgain').addEventListener('click', e => { e.stopPropagation(); start(); });
+$('endTurn').addEventListener('click', e => { e.stopPropagation(); endTurn(); });
+
+addEventListener('keydown', e => {
+  if (e.code === 'Space' || e.code === 'Enter'){
+    e.preventDefault();
+    if (!$('intro').classList.contains('hide')) start();
+    else if (S.phase === 'player') endTurn();
+  }
+  if (/^Digit[1-9]$/.test(e.code)){
+    const n = +e.code.slice(5) - 1;
+    if (n < S.hand.length) onCard(n);
+  }
+  if (e.code === 'Escape'){ S.sel = -1; render(); }
+});
+
+buildLanes(); render();
+if (location.hash === '#play'){ $('intro').classList.add('hide'); newGame(); }
+</script>
+</body>
+</html>
